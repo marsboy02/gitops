@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gitops-default
+  annotations:
+    config.kubernetes.io/local-config: "true"
+
+# 기본적으로 stage 환경을 사용
+resources:
+  - environments/stage 

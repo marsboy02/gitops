@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gitops-stage
+  annotations:
+    config.kubernetes.io/local-config: "true"
+
+# 모든 프로젝트의 stage overlay를 포함
+resources:
+  - ../../projects/nginx/overlay/stage
+  - ../../projects/postgres/overlay/stage
+  - ../../projects/redis/overlay/stage
+
+# 공통 라벨 추가
+commonLabels:
+  environment: stage
+  managed-by: kustomize
+  gitops-project: "true"
+
+# 공통 어노테이션 추가
+commonAnnotations:
+  deployed-by: gitops
+  environment: stage 

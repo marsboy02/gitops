@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: postgres-system
+data:
+  postgresql.conf: |
+    # PostgreSQL Stage 환경 설정
+    listen_addresses = '*'
+    port = 5432
+    
+    # 메모리 설정 (Stage - 개발용)
+    shared_buffers = 64MB
+    effective_cache_size = 256MB
+    work_mem = 2MB
+    maintenance_work_mem = 32MB
+    
+    # 연결 설정
+    max_connections = 50
+    
+    # 로깅 설정 (상세 로깅)
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_statement = 'all'
+    log_min_duration_statement = 100
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    
+    # WAL 설정
+    wal_level = replica
+    max_wal_size = 512MB
+    min_wal_size = 80MB
+    
+    # 체크포인트 설정
+    checkpoint_completion_target = 0.7
+    
+    # 개발용 설정
+    fsync = off
+    synchronous_commit = off 
