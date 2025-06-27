@@ -224,6 +224,8 @@ minikube tunnel
 
 ### k9s 사용법
 
+- TUI를 통해서 쿠버네티스 클러스터를 모니터링합니다.
+
 ```bash
 # k9s 실행
 k9s
