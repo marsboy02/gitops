@@ -12,6 +12,10 @@
 
 [Harbor](https://goharbor.io/)는 컨테이너 이미지 및 Helm 차트를 저장, 서명, 스캔할 수 있는 오픈소스 컨테이너 레지스트리 플랫폼입니다.
 
+### Redash
+
+[Redash](https://redash.io/)는 데이터를 쉽게 시각화하고 공유할 수 있는 오픈소스 BI(Business Intelligence) 도구입니다. 다양한 데이터 소스에 연결하여 SQL 쿼리를 실행하고 결과를 대시보드로 시각화할 수 있습니다.
+
 ## 사전 요구사항
 
 - Kubernetes 클러스터 (v1.25 이상)
@@ -60,6 +64,22 @@ Harbor의 기본 접근 정보:
 - 사용자명: admin
 - 비밀번호: Harbor12345 (커스텀 values.yaml에서 변경 가능)
 
+#### Redash 배포
+
+```bash
+# 1. Redash 배포
+helm install redash ./addons/redash -n redash --create-namespace
+
+# 2. 배포 상태 확인
+kubectl get pods -n redash
+
+# 3. Redash UI 접근 (포트 포워딩 사용)
+kubectl port-forward svc/redash-web -n redash 8082:80
+```
+
+Redash의 기본 접근 정보:
+- 첫 접속 시 관리자 계정을 설정하는 화면이 표시됩니다.
+
 ### GitOps 방식으로 배포 (권장)
 
 GitOps 워크플로우에서는:
@@ -71,7 +91,7 @@ helm install argocd ./addons/argo-cd -n argocd --create-namespace
 
 2. Argo CD에 접속한 후, 이 Git 레포지토리를 소스로 등록합니다.
 
-3. Argo CD Applications을 생성하여 나머지 애드온들(Harbor 등)을 자동으로 배포하도록 설정합니다.
+3. Argo CD Applications을 생성하여 나머지 애드온들(Harbor, Redash 등)을 자동으로 배포하도록 설정합니다.
 
 ## 커스터마이징
 
@@ -80,10 +100,12 @@ helm install argocd ./addons/argo-cd -n argocd --create-namespace
 ```bash
 # 커스텀 values 파일 사용하기
 helm install argocd ./addons/argo-cd -n argocd --create-namespace -f my-argocd-values.yaml
+helm install redash ./addons/redash -n redash --create-namespace -f my-redash-values.yaml
 ```
 
 ## 참고 문서
 
 - [Argo CD 공식 문서](https://argo-cd.readthedocs.io/)
 - [Harbor 공식 문서](https://goharbor.io/docs/)
+- [Redash 공식 문서](https://redash.io/help/)
 - [Helm 공식 문서](https://helm.sh/docs/)
