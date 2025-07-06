@@ -42,7 +42,7 @@ crds:
 global:
   # -- Default domain used by all components
   ## Used for ingresses, certificates, SSO, notifications, etc.
-  domain: argocd.uoslife.net
+  domain: argocd.example.com
 
   # -- Runtime class name for all components
   runtimeClassName: ""
@@ -78,6 +78,9 @@ global:
 
   # -- Annotations for the all deployed Deployments
   deploymentAnnotations: {}
+
+  # -- Labels for the all deployed Deployments
+  deploymentLabels: {}
 
   # -- Annotations for the all deployed pods
   podAnnotations: {}
@@ -186,11 +189,11 @@ configs:
 
     # -- Enable exec feature in Argo UI
     ## Ref: https://argo-cd.readthedocs.io/en/latest/operator-manual/rbac/#exec-resource
-    exec.enabled: true
+    exec.enabled: false
 
     # -- Enable local admin user
     ## Ref: https://argo-cd.readthedocs.io/en/latest/faq/#how-to-disable-admin-user
-    admin.enabled: false
+    admin.enabled: true
 
     # -- Timeout to discover if a new manifests version got published to the repository
     timeout.reconciliation: 180s
@@ -216,16 +219,22 @@ configs:
     #         - name: your-github-org
 
     # OIDC configuration as an alternative to dex (optional).
-    oidc.config: |
-      name: UOSLIFE
-      issuer: https://auth.uoslife.com/auth/realms/INTERNAL
-      clientID: argo-cd
-      clientSecret: $oidc.keycloak.clientSecret
-      requestedScopes:
-        - openid
-        - profile
-        - email
-        - groups
+    # oidc.config: |
+    #   name: AzureAD
+    #   issuer: https://login.microsoftonline.com/TENANT_ID/v2.0
+    #   clientID: CLIENT_ID
+    #   clientSecret: $oidc.azuread.clientSecret
+    #   rootCA: |
+    #     -----BEGIN CERTIFICATE-----
+    #     ... encoded certificate data here ...
+    #     -----END CERTIFICATE-----
+    #   requestedIDTokenClaims:
+    #     groups:
+    #       essential: true
+    #   requestedScopes:
+    #     - openid
+    #     - profile
+    #     - email
 
     # Extension Configuration
     ## Ref: https://argo-cd.readthedocs.io/en/latest/developer-guide/extensions/proxy-extensions/
@@ -400,7 +409,7 @@ configs:
     ## Server properties
     # -- Run server without TLS
     ## NOTE: This value should be set when you generate params by other means as it changes ports used by ingress template.
-    server.insecure: true
+    server.insecure: false
     # -- Value for base href in index.html. Used if Argo CD is running behind reverse proxy under subpath different from /
     server.basehref: /
     # -- Used if Argo CD is running behind reverse proxy under subpath different from /
@@ -461,9 +470,7 @@ configs:
 
     # -- File containing user-defined policies and role definitions.
     # @default -- `''` (See [values.yaml])
-    policy.csv: |
-      g, Developer, role:readonly
-      g, SRE, role:admin
+    policy.csv: ''
     # Policy rules are in the form:
     #  p, subject, resource, action, object, effect
     # Role definitions and bindings are in the form:
@@ -638,39 +645,26 @@ configs:
 
   # -- Repository credentials to be used as Templates for other repos
   ## Creates a secret for each key/value specified below to create repository credentials
-  credentialTemplates:
-    github:
-      url: https://github.com/uoslife/gitops.git
-      githubAppID: "319581"
-      githubAppInstallationID: "36520253"
-      githubAppPrivateKey: |
-        -----BEGIN RSA PRIVATE KEY-----
-        MIIEowIBAAKCAQEAqHoevmioAlI+LPJ5xIr2r+L4Thz6QUuJ6C855gfiCTu35gXQ
-        rojuu9e/XHqWHC1QBVVXXpDLw+U7Ref0Vc8gWPDQ1weotuPFv+U0X+jqFuOPvrGh
-        zE0XPFKGs7KjWQ1Nl00LW8DyrLsFcMKmDvQiT7ZNHYXYwfx/4Vqio4Pm60LIzQk6
-        IiyQ0fLkZGrsRHM+S0/CKl9QOOgOB06YvkZ+Koa969anF+HDwfuJxLj1WrJrCfEo
-        K5PXZjCpGR9128unJj0+DGWQyVLnIA9jhZo7BzxzMzY5VL3JOVDRzBEFf6n8J1EP
-        fkuvhd4a64BElaOAAR99E79Ff5TX+dzf4ozMvwIDAQABAoIBAQCkTAtFNrx5HwkB
-        PilfcQEm/1mUm4+1M1w2cC+vUwqsZG9vQ0aBnonp53j3T5ipu8qomNQOJXiA/kAy
-        aQSO1eG+uoF+4To3uKI1A+lyiqoWTi71ETcvDBLXwccY4OGJS37aSMkF3oEJz4x7
-        rWbReGUphSdo3glHC90NwByRB2WfEDkNOG798EZvy6YYbASXAjqtt8rkUnrEFcVn
-        mui5ikADvnrpHxNIMBpqqs/+ut1h3fclt/6HmfeGBoTprFRmBfJsQ4mUZRLYVK03
-        KBLSWdaYrmcFBK+GwIBDeKvh098kdL3vC7p74F7rfU0UCoBuB05BCcV/WLxKS6tC
-        qzTzcjsBAoGBANxLoJqHrt/TEbHYhwSRvTSu6buT6hDZsCyeKoK3uITvP40v3IQT
-        zpzdh5qZDxyQPyWQZTuFViXydwMo+/2vi54nIIS4IUMo1W42q2VlR9mWvWDMQE2t
-        sw/Ooa3o7Qv71AvZUcHYgXHO/4itlczumPFY1zTL2N0KtKFR/MHmX4mBAoGBAMPI
-        eTvTxgjUWSL9ECyxpXWxhaOmUY2167NbbsGtsvmMSvLwHRiFMFaNNOVc3UxFwaDX
-        1k6OHhGV9OUTuyf0tR/KmGeRV1QnhRKcLpxL6GOyTcvrIjQ0Ik0O44UFNXmhv/BD
-        9e6iEL5yJyl0a96U3niHegRyMJ3e5kF0E9rG6PY/AoGACV1lrGwMMROl8uuDgdw4
-        MN8mrISzNJgsdxkaMYhh3bTV/MiGFU9KPzzjoNzU2aAALzaeNxOJ//74tDevzq8B
-        vm1nYnz5XQOFXzQPwTW3Ajb4Qf8s1KCHtipQkTYPray87OwGH7l2d0IXdtX6QkX6
-        VngyXdo0k+D6oMj9d7i1YwECgYAHK3BFIJw/9obNITdWa6sDhFzAgXa7Gc5n4xFL
-        RnEnclvMSb7HBxmeEc2+GIiCIovUuBLBDbNMMZGmUfKoo+1+HI04PbpU+p2E8PNE
-        BgOcowr2TMYT41TePY1XcbljmujMg7Cd7JFwZ/3HJtxMamc7QrrVLtlY7rC/9OBF
-        QsOFQQKBgCxCJTP0smdcCnGUzn3cbzDOs3C/b1czfrzpGIFoKzf9iS3+wmF7fZCu
-        1QNAQL40AdghEWl4bcLKkaYAKI0IClPDQZC21GhgNNlKTJImF7vZhZ7sxGZWgD88
-        2qjlHlhVmaevYIoWZp6+CjVik8l+Xhw1r5ajsLsa2hR4WSJ3ESw1
-        -----END RSA PRIVATE KEY-----
+  credentialTemplates: {}
+    # github-enterprise-creds-1:
+    #   url: https://github.com/argoproj
+    #   githubAppID: 1
+    #   githubAppInstallationID: 2
+    #   githubAppEnterpriseBaseUrl: https://ghe.example.com/api/v3
+    #   githubAppPrivateKey: |
+    #     -----BEGIN OPENSSH PRIVATE KEY-----
+    #     ...
+    #     -----END OPENSSH PRIVATE KEY-----
+    # https-creds:
+    #   url: https://github.com/argoproj
+    #   password: my-password
+    #   username: my-username
+    # ssh-creds:
+    #  url: git@github.com:argoproj-labs
+    #  sshPrivateKey: |
+    #    -----BEGIN OPENSSH PRIVATE KEY-----
+    #    ...
+    #    -----END OPENSSH PRIVATE KEY-----
 
   # -- Annotations to be added to `configs.credentialTemplates` Secret
   credentialTemplatesAnnotations: {}
@@ -678,10 +672,19 @@ configs:
   # -- Repositories list to be used by applications
   ## Creates a secret for each key/value specified below to create repositories
   ## Note: the last example in the list would use a repository credential template, configured under "configs.credentialTemplates".
-  repositories:
-    gitops:
-      type: git
-      url: https://github.com/uoslife/gitops.git
+  repositories: {}
+    # istio-helm-repo:
+    #   url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
+    #   name: istio.io
+    #   type: helm
+    # private-helm-repo:
+    #   url: https://my-private-chart-repo.internal
+    #   name: private-repo
+    #   type: helm
+    #   password: my-password
+    #   username: my-username
+    # private-repo:
+    #   url: https://github.com/argoproj/private-repo
 
   # -- Annotations to be added to `configs.repositories` Secret
   repositoriesAnnotations: {}
@@ -718,7 +721,8 @@ configs:
     ## Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#sensitive-data-and-sso-client-secrets
     ## Note that all values must be non-empty.
     extra:
-      oidc.keycloak.clientSecret: "q92SoSEmGUetbPa5eFIPfxFlFqPASZ9l"
+      {}
+      # LDAP_PASSWORD: "mypassword"
 
     # -- Bcrypt hashed admin password
     ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
@@ -887,6 +891,9 @@ controller:
 
   # -- Annotations for the application controller Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the application controller Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be added to application controller pods
   podAnnotations: {}
@@ -1236,6 +1243,9 @@ dex:
   # -- Annotations to be added to the Dex server Deployment
   deploymentAnnotations: {}
 
+  # -- Labels for the Dex server Deployment
+  deploymentLabels: {}
+
   # -- Annotations to be added to the Dex server pods
   podAnnotations: {}
 
@@ -1436,7 +1446,7 @@ redis:
       # -- Repository to use for the redis-exporter
       repository: ghcr.io/oliver006/redis_exporter
       # -- Tag to use for the redis-exporter
-      tag: v1.73.0
+      tag: v1.74.0
       # -- Image pull policy for the redis-exporter
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -1556,6 +1566,9 @@ redis:
 
   # -- Annotations to be added to the Redis server Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the Redis server Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be added to the Redis server pods
   podAnnotations: {}
@@ -1803,8 +1816,8 @@ externalRedis:
   password: ""
   # -- External Redis server port
   port: 6379
-  # -- The name of an existing secret with Redis (must contain key `redis-password`) and Sentinel credentials.
-  # When it's set, the `externalRedis.password` parameter is ignored
+  # -- The name of an existing secret with Redis (must contain key `redis-password`. And should contain `redis-username` if username is not `default`) and Sentinel credentials.
+  # When it's set, the `externalRedis.username` and `externalRedis.password` parameters are ignored
   existingSecret: ""
   # -- External Redis Secret annotations
   secretAnnotations: {}
@@ -2092,6 +2105,9 @@ server:
   # -- Annotations to be added to server Deployment
   deploymentAnnotations: {}
 
+  # -- Labels for the server Deployment
+  deploymentLabels: {}
+
   # -- Annotations to be added to server pods
   podAnnotations: {}
 
@@ -2357,7 +2373,7 @@ server:
   # Argo CD server ingress configuration
   ingress:
     # -- Enable an ingress resource for the Argo CD server
-    enabled: true
+    enabled: false
     # -- Specific implementation for ingress controller. One of `generic`, `aws` or `gke`
     ## Additional configuration might be required in related configuration sections
     controller: generic
@@ -2370,11 +2386,11 @@ server:
       # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 
     # -- Defines which ingress controller will implement the resource
-    ingressClassName: "nginx"
+    ingressClassName: ""
 
     # -- Argo CD server hostname
     # @default -- `""` (defaults to global.domain)
-    hostname: "argocd.uoslife.net"
+    hostname: ""
 
     # -- The path to Argo CD server
     path: /
@@ -2740,6 +2756,9 @@ repoServer:
   # -- Annotations to be added to repo server Deployment
   deploymentAnnotations: {}
 
+  # -- Labels for the repo server Deployment
+  deploymentLabels: {}
+
   # -- Annotations to be added to repo server pods
   podAnnotations: {}
 
@@ -2870,6 +2889,8 @@ repoServer:
     port: 8081
     # -- Repo server service port name
     portName: tcp-repo-server
+    # -- Traffic distribution preference for the repo server service. If the field is not set, the implementation will apply its default routing strategy.
+    trafficDistribution: ""
 
   ## Repo server metrics service configuration
   metrics:
@@ -3109,6 +3130,9 @@ applicationSet:
 
   # -- Annotations to be added to ApplicationSet controller Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the ApplicationSet controller Deployment
+  deploymentLabels: {}
 
   # -- Annotations for the ApplicationSet controller pods
   podAnnotations: {}
@@ -3491,6 +3515,9 @@ notifications:
 
   # -- Annotations to be applied to the notifications controller Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the notifications controller Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be applied to the notifications controller Pods
   podAnnotations: {}
@@ -3956,6 +3983,10 @@ commitServer:
     annotations: {}
     # -- commit server service labels
     labels: {}
+    # -- commit server service port
+    port: 8086
+    # -- commit server service port name
+    portName: server
 
   # -- Automount API credentials for the Service Account into the pod.
   automountServiceAccountToken: false
@@ -3974,6 +4005,9 @@ commitServer:
 
   # -- Annotations to be added to commit server Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the commit server Deployment
+  deploymentLabels: {}
 
   # -- Annotations for the commit server pods
   podAnnotations: {}
